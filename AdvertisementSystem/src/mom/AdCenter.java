@@ -1,15 +1,16 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package mom;
 
 
+import java.util.HashMap;
 import java.util.Set;
+import javax.jms.DeliveryMode;
 //import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
@@ -25,6 +26,7 @@ public class AdCenter implements ExceptionListener {
     private ActiveMQConnection conn;
     private Session session;
     private Channel topic;
+    private HashMap subscribeTopics;
     
     
     
@@ -44,16 +46,15 @@ public class AdCenter implements ExceptionListener {
         }
     }
     
-    public Boolean channelExist(String channelName) {
-        return true;
-    }
+//    public Boolean channelExist(String channelName) {
+//        return true;
+//    }
     
         /**** PRODUCER SECTION ****/
     public Boolean conectAsProducer(String host) {
         try {
             ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(host);
             conn = (ActiveMQConnection) connectionFactory.createConnection();
-            conn.start();
             return true;
         } catch(JMSException e) {
             return false;
@@ -68,7 +69,8 @@ public class AdCenter implements ExceptionListener {
         } else {
             try {
                 MessageProducer producer = session.createProducer(destination);
-                TextMessage message = session.createTextMessage(msj);
+                producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+                TextMessage message = session.createTextMessage(msj);          
 		producer.send(message);                
                 return true;
             } catch (JMSException e) {
@@ -94,12 +96,42 @@ public class AdCenter implements ExceptionListener {
             ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(host);
             conn = (ActiveMQConnection) connectionFactory.createConnection();
             conn.setExceptionListener(this);
-            conn.start();
+            subscribeTopics = new HashMap<String, Thread>();
             return true;
         } catch(JMSException e) {
             return false;
         }
         
+    }
+    
+    public Boolean subscribe(String channel) {
+        try {
+            Destination destination = session.createQueue(channel);
+            MessageConsumer consumer = session.createConsumer(destination);
+            MessageListener listener = new MessageListener() {
+                @Override
+                public void onMessage(Message msg) {
+                    if (msg instanceof TextMessage) {
+                        TextMessage textMessage = (TextMessage) msg;
+                        String text = null;
+                        try {
+                            text = textMessage.getText();
+                        } catch (JMSException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        System.out.println("Received: " + text);
+                    } else {
+                        System.out.println("Received: " + msg);
+                    }
+                }
+            };
+            consumer.setMessageListener(listener);
+            subscribeTopics.put(channel, new Thread());
+            return true;
+        } catch (JMSException ex) {
+            return false;
+        }
     }
     
     public Boolean pull(String channel) {
@@ -116,6 +148,7 @@ public class AdCenter implements ExceptionListener {
     public Boolean logIn() {
         try {
             session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);//createSession(true, -1); // 
+            conn.start();
             topic = new Channel();
             return true;
         } catch(JMSException e) {

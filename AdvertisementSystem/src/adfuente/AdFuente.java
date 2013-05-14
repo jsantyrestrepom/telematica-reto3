@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package adfuente;
 
 
@@ -61,11 +57,15 @@ public class AdFuente {
     }
     
     private static void sendAd() {
-        System.out.print("Channel: "+ canalActive +" (active channel)\n"
-                + "Message: ");
-        String message = scan.nextLine();
-        adCenter.sendToChannel(canalActive, message);
-        System.out.println("=> advertisement sent: " + message);
+        if (canalActive == null) {
+            System.out.println("=> no channel active");
+        } else {
+            System.out.print("Channel: "+ canalActive +" (active channel)\n"
+                    + "Message: ");
+            String message = scan.nextLine();
+            adCenter.sendToChannel(canalActive, message);
+            System.out.println("=> advertisement sent: " + message);
+        }
     }
     
     public static void main(String[] args) throws Exception {
@@ -80,13 +80,12 @@ public class AdFuente {
             host = "tcp://localhost:61616";
         }
         establishConnection(host);
-
         
         System.out.println("current channels: \n"+ adCenter.channelList());
         input = "";
         while (!"halt".equals(input)) {
-            System.out.println("\n\n-----------------------------------------");
-            System.out.println("\n\n\tOPCIONS"
+            System.out.println("\n-------------------------------------------");
+            System.out.println("\tOPCIONS"
                     + "\n1.List the current channel"
                     + "\n2.Create a channel"
                     + "\n3.Change active channel"
@@ -113,8 +112,8 @@ public class AdFuente {
                 }
             } catch (Exception e) {}
         }
-
-
+        
         endingConnection();
     }
+    
 }

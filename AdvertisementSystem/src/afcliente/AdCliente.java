@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package afcliente;
 
 
@@ -42,9 +38,15 @@ public class AdCliente {
         System.out.println("=> disconnection succesful !");
     }
     
+    private static void subscriberToChannel() {
+        System.out.print("Channel? ");
+        String input = scan.nextLine().trim();
+        adCenter.subscribe(input);
+    }
+    
     private static void makePull() {
         System.out.print("Channel? ");
-        String input = scan.nextLine();
+        String input = scan.nextLine().trim();
         adCenter.pull(input);
     }
     
@@ -69,11 +71,12 @@ public class AdCliente {
         System.out.println("current channels: \n"+ adCenter.channelList());
         input = "";
         while (!"halt".equals(input)) {
-            System.out.println("\n\n-----------------------------------------");
-            System.out.println("\n\n\tOPCIONS"
+            System.out.println("\n-------------------------------------------");
+            System.out.println("\tOPCIONS"
                     + "\n1.List the current channel"
-                    + "\n2.Make PULL to a specific channel"
-                    + "\n3.Active PUSH operation"
+                    + "\n2.Subscribe to a channel"
+                    + "\n3.Make PULL to a specific channel"
+                    + "\n4.Active PUSH operation"
                     + "\nX.Log out");
             input = scan.nextLine();
             try {
@@ -83,13 +86,16 @@ public class AdCliente {
                         System.out.println("current channels: \n"+ adCenter.channelList());
                         break;
                     case 2:
-                        makePull();
+                        subscriberToChannel();
                         break;
                     case 3:
-                        activePush();
+                        makePull();
                         break;
                     case 4:
-                        //opcion4();
+                        activePush();
+                        break;
+//                    case 5:
+//                        //opcion4();
                     case 8:
                         input = "halt";
                 }
